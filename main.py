@@ -1,17 +1,40 @@
-import pygame, os, random, cv2
+import pygame, os, random, cv2, sys
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 from mediapipe.python.solutions.pose import Pose
 pose = Pose()
 pygame.init()
 SCREEN_HEIGHT, SCREEN_WIDTH = 600, 1100
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
-RUNNING = [pygame.image.load(os.path.join("Assets/Dino", "DinoRun1.png")), pygame.image.load(os.path.join("Assets/Dino", "DinoRun2.png"))]
-JUMPING = pygame.image.load(os.path.join("Assets/Dino", "DinoJump.png"))
-DUCKING = [pygame.image.load(os.path.join("Assets/Dino", "DinoDuck1.png")), pygame.image.load(os.path.join("Assets/Dino", "DinoDuck2.png"))]
-SMALL_CACTUS = [pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus1.png")), pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus2.png")), pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus3.png"))]
-LARGE_CACTUS = [pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus1.png")), pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus2.png")), pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus3.png"))]
-BIRD = [pygame.image.load(os.path.join("Assets/Bird", "Bird1.png")), pygame.image.load(os.path.join("Assets/Bird", "Bird2.png"))]
-CLOUD = pygame.image.load(os.path.join("Assets/Other", "Cloud.png"))
-BG = pygame.image.load(os.path.join("Assets/Other", "Track.png"))
+RUNNING = [
+    pygame.image.load(resource_path(os.path.join("Assets/Dino", "DinoRun1.png"))),
+    pygame.image.load(resource_path(os.path.join("Assets/Dino", "DinoRun2.png")))
+]
+JUMPING = pygame.image.load(resource_path(os.path.join("Assets/Dino", "DinoJump.png")))
+DUCKING = [
+    pygame.image.load(resource_path(os.path.join("Assets/Dino", "DinoDuck1.png"))),
+    pygame.image.load(resource_path(os.path.join("Assets/Dino", "DinoDuck2.png")))
+]
+SMALL_CACTUS = [
+    pygame.image.load(resource_path(os.path.join("Assets/Cactus", "SmallCactus1.png"))),
+    pygame.image.load(resource_path(os.path.join("Assets/Cactus", "SmallCactus2.png"))),
+    pygame.image.load(resource_path(os.path.join("Assets/Cactus", "SmallCactus3.png")))
+]
+LARGE_CACTUS = [
+    pygame.image.load(resource_path(os.path.join("Assets/Cactus", "LargeCactus1.png"))),
+    pygame.image.load(resource_path(os.path.join("Assets/Cactus", "LargeCactus2.png"))),
+    pygame.image.load(resource_path(os.path.join("Assets/Cactus", "LargeCactus3.png")))
+]
+BIRD = [
+    pygame.image.load(resource_path(os.path.join("Assets/Bird", "Bird1.png"))),
+    pygame.image.load(resource_path(os.path.join("Assets/Bird", "Bird2.png")))
+]
+CLOUD = pygame.image.load(resource_path(os.path.join("Assets/Other", "Cloud.png")))
+BG = pygame.image.load(resource_path(os.path.join("Assets/Other", "Track.png")))
 pygame.display.set_caption("Dino Game")
 pygame.display.set_icon(JUMPING)
 cap = cv2.VideoCapture(0)
@@ -125,107 +148,111 @@ class Bird(Obstacle):
         self.index += 1
 def main():
     global game_speed, x_pos_bg, y_pos_bg, points, obstacles, prev_y
-    run = True
-    clock = pygame.time.Clock()
-    player = Dinosaur()
-    cloud = Cloud()
-    game_speed = 20
-    x_pos_bg = 0
-    y_pos_bg = 380
-    points = 0
-    font = pygame.font.Font('freesansbold.ttf', 20)
-    obstacles = []
-    death_count = 0
-    def score():
-        global points, game_speed
-        points += 1
-        if points % 100 == 0:
-            game_speed += 1
-        text = font.render("Points: " + str(points), True, (0, 0, 0))
-        textRect = text.get_rect()
-        textRect.center = (1000, 40)
-        SCREEN.blit(text, textRect)
-    def background():
-        global x_pos_bg, y_pos_bg
-        image_width = BG.get_width()
-        SCREEN.blit(BG, (x_pos_bg, y_pos_bg))
-        SCREEN.blit(BG, (image_width + x_pos_bg, y_pos_bg))
-        if x_pos_bg <= -image_width:
+    try:
+        run = True
+        clock = pygame.time.Clock()
+        player = Dinosaur()
+        cloud = Cloud()
+        game_speed = 20
+        x_pos_bg = 0
+        y_pos_bg = 380
+        points = 0
+        font = pygame.font.Font('freesansbold.ttf', 20)
+        obstacles = []
+        death_count = 0
+        def score():
+            global points, game_speed
+            points += 1
+            if points % 100 == 0:
+                game_speed += 1
+            text = font.render("Points: " + str(points), True, (0, 0, 0))
+            textRect = text.get_rect()
+            textRect.center = (1000, 40)
+            SCREEN.blit(text, textRect)
+        def background():
+            global x_pos_bg, y_pos_bg
+            image_width = BG.get_width()
+            SCREEN.blit(BG, (x_pos_bg, y_pos_bg))
             SCREEN.blit(BG, (image_width + x_pos_bg, y_pos_bg))
-            x_pos_bg = 0
-        x_pos_bg -= game_speed
-    while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                pygame.quit()
-                cap.release()
-                cv2.destroyAllWindows()
-                os.system("cls" if os.name == "nt" else "clear")
-                run = False
-                break
-        SCREEN.fill((255, 255, 255))
-        jump_threshold = 0.05
-        duck_threshold = 0.05
-        _, frame = cap.read()
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = pose.process(rgb_frame)
-        keys = pygame.key.get_pressed()
-        userInput = {"up": False, "down": False}
-        if results.pose_landmarks: #type:ignore
-            nose = results.pose_landmarks.landmark[0] #type:ignore
-            if prev_y is not None:
-                if nose.y < prev_y - jump_threshold or keys[pygame.K_SPACE] or keys[pygame.K_UP]:
-                    userInput["up"] = True
-                elif nose.y > prev_y + duck_threshold or keys[pygame.K_DOWN]:
-                    userInput["down"] = True
-            prev_y = nose.y
-        player.draw(SCREEN)
-        player.update(userInput)
-        if len(obstacles) == 0:
-            if random.randint(0, 2) == 0:
-                obstacles.append(SmallCactus(SMALL_CACTUS))
-            elif random.randint(0, 2) == 1:
-                obstacles.append(LargeCactus(LARGE_CACTUS))
-            elif random.randint(0, 2) == 2:
-                obstacles.append(Bird(BIRD))
-        for obstacle in obstacles:
-            obstacle.draw(SCREEN)
-            obstacle.update()
-            if player.dino_rect.colliderect(obstacle.rect):
-                pygame.time.delay(2000)
-                death_count += 1
-                menu(death_count)
-        background()
-        cloud.draw(SCREEN)
-        cloud.update()
-        score()
-        clock.tick(30)
-        pygame.display.update()
-        cv2.imshow("Dino Game Camera", frame)
+            if x_pos_bg <= -image_width:
+                SCREEN.blit(BG, (image_width + x_pos_bg, y_pos_bg))
+                x_pos_bg = 0
+            x_pos_bg -= game_speed
+        while run:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                    pygame.quit()
+                    cap.release()
+                    cv2.destroyAllWindows()
+                    run = False
+                    break
+            SCREEN.fill((255, 255, 255))
+            jump_threshold = 0.05
+            duck_threshold = 0.05
+            _, frame = cap.read()
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = pose.process(rgb_frame)
+            keys = pygame.key.get_pressed()
+            userInput = {"up": False, "down": False}
+            if results.pose_landmarks: #type:ignore
+                nose = results.pose_landmarks.landmark[0] #type:ignore
+                if prev_y is not None:
+                    if nose.y < prev_y - jump_threshold or keys[pygame.K_SPACE] or keys[pygame.K_UP]:
+                        userInput["up"] = True
+                    elif nose.y > prev_y + duck_threshold or keys[pygame.K_DOWN]:
+                        userInput["down"] = True
+                prev_y = nose.y
+            player.draw(SCREEN)
+            player.update(userInput)
+            if len(obstacles) == 0:
+                if random.randint(0, 2) == 0:
+                    obstacles.append(SmallCactus(SMALL_CACTUS))
+                elif random.randint(0, 2) == 1:
+                    obstacles.append(LargeCactus(LARGE_CACTUS))
+                elif random.randint(0, 2) == 2:
+                    obstacles.append(Bird(BIRD))
+            for obstacle in obstacles:
+                obstacle.draw(SCREEN)
+                obstacle.update()
+                if player.dino_rect.colliderect(obstacle.rect):
+                    pygame.time.delay(2000)
+                    death_count += 1
+                    menu(death_count)
+            background()
+            cloud.draw(SCREEN)
+            cloud.update()
+            score()
+            clock.tick(30)
+            pygame.display.update()
+            cv2.imshow("Dino Game Camera", frame)
+    except:
+        pass
 def menu(death_count):
     global points
     run = True
-    while run:
-        SCREEN.fill((255, 255, 255))
-        font = pygame.font.Font('freesansbold.ttf', 30)
-        if death_count == 0:
-            text = font.render("Press any Key to Start", True, (0, 0, 0))
-        elif death_count > 0:
-            text = font.render("Press any Key to Restart", True, (0, 0, 0))
-            score = font.render("Your Score: " + str(points), True, (0, 0, 0))
-            scoreRect = score.get_rect()
-            scoreRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50)
-            SCREEN.blit(score, scoreRect)
-        textRect = text.get_rect()
-        textRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-        SCREEN.blit(text, textRect)
-        SCREEN.blit(RUNNING[0], (SCREEN_WIDTH // 2 - 20, SCREEN_HEIGHT // 2 - 140))
-        pygame.display.update()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                run = False
-            if event.type == pygame.KEYDOWN:
-                main()
+    try:
+        while run:
+            SCREEN.fill((255, 255, 255))
+            font = pygame.font.Font('freesansbold.ttf', 30)
+            if death_count == 0:
+                text = font.render("Press any Key to Start", True, (0, 0, 0))
+            elif death_count > 0:
+                text = font.render("Press any Key to Restart", True, (0, 0, 0))
+                score = font.render("Your Score: " + str(points), True, (0, 0, 0))
+                scoreRect = score.get_rect()
+                scoreRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50)
+                SCREEN.blit(score, scoreRect)
+            textRect = text.get_rect()
+            textRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+            SCREEN.blit(text, textRect)
+            SCREEN.blit(RUNNING[0], (SCREEN_WIDTH // 2 - 20, SCREEN_HEIGHT // 2 - 140))
+            pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    run = False
+                if event.type == pygame.KEYDOWN:
+                    main()
+    except:
+        pass
 menu(death_count=0)
-os.system("cls" if os.name == "nt" else "clear")
